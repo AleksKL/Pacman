@@ -3,6 +3,7 @@ package com.kyrylenko.pacman;
 
 import com.kyrylenko.pacman.Elements.BaseElement;
 import com.kyrylenko.pacman.Elements.PacmanElement;
+import com.kyrylenko.pacman.Elements.TunnelElement;
 
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -96,14 +97,20 @@ public class Game {
         }
     }
  public void move(int newX, int newY){
+
      if (newX>=0 && newY>=0 && newX<10 && newY<10) {
 
          BaseElement elem = levelArray[newX][newY];
-         levelArray[newX][newY] = pac;
-         levelArray[pacPositionX][pacPositionY] = elem;
-         pacPositionX = newX;
-         pacPositionY = newY;
-
+          if (elem instanceof TunnelElement) {
+              TunnelElement tunel = (TunnelElement) elem;
+              if (!tunel.isEaten()){
+                  tunel.EatO();
+              }
+             levelArray[newX][newY] = pac;
+             levelArray[pacPositionX][pacPositionY] = elem;
+             pacPositionX = newX;
+             pacPositionY = newY;
+         }
      }
 
 
