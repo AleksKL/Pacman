@@ -30,7 +30,10 @@ public class Level {
             }
 
         }
+
     }
+
+
 
     public BaseElement[][] getLevelArray() {
         return levelArray;

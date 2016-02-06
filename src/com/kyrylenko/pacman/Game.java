@@ -33,7 +33,7 @@ public class Game {
         pacPositionX = 0;
         pacPositionY = 1;
         levelArray[pacPositionX][pacPositionY] = pac;
-        ghost1PositionX = 0;
+        ghost1PositionX = 8;
         ghost1PositionY = 8;
         levelArray[ghost1PositionX][ghost1PositionY] = ghost1;
        // ghost2PositionX = 5;
@@ -94,7 +94,8 @@ public class Game {
                 }
 
             }
-
+            if (score>20){
+            followPac();}
             movePac(newX, newY); // двигаем пакмена
             print();        //отображаем текущее состояние игры
             sleep();        //пауза между ходами
@@ -106,7 +107,7 @@ public class Game {
     public void sleep() {
         try {
 
-            Thread.sleep(10);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
         }
     }
@@ -131,11 +132,62 @@ public class Game {
 
  }
 
-    public void moveGhost(){
-        double currentDistance = calculateDistance(ghost1PositionX,ghost1PositionY);
+    public void moveGhost(int newX,int newY){
+
+        if (newX>=0 && newY>=0 && newX<10 && newY<10) {
+
+            BaseElement elem = levelArray[newX][newY];
+            if (elem instanceof TunnelElement) {
+                levelArray[newX][newY] = ghost1;
+                levelArray[ghost1PositionX][ghost1PositionY] = elem;
+                ghost1PositionX = newX;
+                ghost1PositionY = newY;
+            }
+        }
+
+
 
 
     }
+
+    public void followPac(){
+        PointXY moveUP = new PointXY(ghost1PositionX-1,ghost1PositionY);
+        PointXY moveDown = new PointXY(ghost1PositionX+1,ghost1PositionY);
+        PointXY moveLeft = new PointXY(ghost1PositionX,ghost1PositionY-1);
+        PointXY moveRight = new PointXY(ghost1PositionX,ghost1PositionY+1);
+        double currentDistance = calculateDistance(ghost1PositionX,ghost1PositionY);
+
+        if (canBeMoved(moveUP.getX(),moveUP.getY())&& calculateDistance(moveUP.getX(),moveUP.getY())<currentDistance )
+        {
+            moveGhost(moveUP.getX(),moveUP.getY());
+        }
+
+        else if (canBeMoved(moveDown.getX(),moveDown.getY())&& calculateDistance(moveDown.getX(),moveDown.getY())<currentDistance )
+        {
+            moveGhost(moveDown.getX(),moveDown.getY());
+        }
+        else if (canBeMoved(moveLeft.getX(),moveLeft.getY())&& calculateDistance(moveLeft.getX(),moveLeft.getY())<currentDistance )
+        {
+            moveGhost(moveLeft.getX(),moveLeft.getY());
+        }
+        else if (canBeMoved(moveRight.getX(),moveRight.getY())&& calculateDistance(moveRight.getX(),moveRight.getY())<currentDistance )
+        {
+            moveGhost(moveRight.getX(),moveRight.getY());
+        }
+    }
+
+    public boolean canBeMoved(int newX, int newY){
+
+        if (newX>=0 && newY>=0 && newX<10 && newY<10) {
+
+            BaseElement elem = levelArray[newX][newY];
+            if (elem instanceof TunnelElement) {
+               return true;
+            }
+        }
+        return false;
+    }
+
 
     public double calculateDistance(int newGhostX, int newGhostY){
         double distanceX = pacPositionX - newGhostX;
