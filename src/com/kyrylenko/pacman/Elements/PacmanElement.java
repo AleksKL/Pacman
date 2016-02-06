@@ -6,6 +6,6 @@ package com.kyrylenko.pacman.Elements;
 public class PacmanElement extends BaseElement {
 
    public PacmanElement(){
-        charforShow = 'W';
+        charforShow = 'C';
     }
 }

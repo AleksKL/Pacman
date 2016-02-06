@@ -2,6 +2,7 @@ package com.kyrylenko.pacman;
 
 
 import com.kyrylenko.pacman.Elements.BaseElement;
+import com.kyrylenko.pacman.Elements.GhostElement;
 import com.kyrylenko.pacman.Elements.PacmanElement;
 import com.kyrylenko.pacman.Elements.TunnelElement;
 
@@ -10,11 +11,17 @@ import java.io.IOException;
 
 public class Game {
 
-    BaseElement[][] levelArray;
+    private BaseElement[][] levelArray;
     private PacmanElement pac = new PacmanElement();
-    int pacPositionX;
-    int pacPositionY;
-
+    private GhostElement ghost1 = new GhostElement();
+    //private GhostElement ghost2 = new GhostElement();
+    private int pacPositionX;
+    private int pacPositionY;
+    private int ghost1PositionX;
+    private int ghost1PositionY;
+   // private int ghost2PositionX;
+    //private int ghost2PositionY;
+    private int score = 0;
     public Game() {
         Level level = null;
         try {
@@ -26,9 +33,16 @@ public class Game {
         pacPositionX = 0;
         pacPositionY = 1;
         levelArray[pacPositionX][pacPositionY] = pac;
+        ghost1PositionX = 0;
+        ghost1PositionY = 8;
+        levelArray[ghost1PositionX][ghost1PositionY] = ghost1;
+       // ghost2PositionX = 5;
+      //  ghost2PositionY = 8;
+       // levelArray[ghost2PositionX][ghost2PositionY] = ghost2;
     }
 
     public void print() {
+        System.out.println("Score "+score);
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
 
@@ -81,7 +95,7 @@ public class Game {
 
             }
 
-            move(newX, newY); // двигаем пакмена
+            movePac(newX, newY); // двигаем пакмена
             print();        //отображаем текущее состояние игры
             sleep();        //пауза между ходами
         }
@@ -96,7 +110,7 @@ public class Game {
         } catch (InterruptedException e) {
         }
     }
- public void move(int newX, int newY){
+ public void movePac(int newX, int newY){
 
      if (newX>=0 && newY>=0 && newX<10 && newY<10) {
 
@@ -105,6 +119,7 @@ public class Game {
               TunnelElement tunel = (TunnelElement) elem;
               if (!tunel.isEaten()){
                   tunel.EatO();
+                  score +=10;
               }
              levelArray[newX][newY] = pac;
              levelArray[pacPositionX][pacPositionY] = elem;
@@ -115,6 +130,19 @@ public class Game {
 
 
  }
+
+    public void moveGhost(){
+        double currentDistance = calculateDistance(ghost1PositionX,ghost1PositionY);
+
+
+    }
+
+    public double calculateDistance(int newGhostX, int newGhostY){
+        double distanceX = pacPositionX - newGhostX;
+        double distanceY = pacPositionY - newGhostY;
+        return Math.sqrt(distanceX*distanceX+distanceY*distanceY);
+
+    }
     public static void main(String[] args) throws IOException {
 
         Game game = new Game();
