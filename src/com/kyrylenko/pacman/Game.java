@@ -37,6 +37,9 @@ public class Game {
             }
             System.out.println();
         }
+        System.out.println();
+        System.out.println();
+        System.out.println();
     }
 
     public void run() {
@@ -46,6 +49,9 @@ public class Game {
 
 
         while (true) {
+            int newX = pacPositionX;
+            int newY = pacPositionY;
+
             //"наблюдатель" содержит события о нажатии клавиш?
             if (keyboardObserver.hasKeyEvents()) {
                 KeyEvent event = keyboardObserver.getEventFromTop();
@@ -54,23 +60,27 @@ public class Game {
 
                 //Если "стрелка влево" - сдвинуть фигурку влево
                 if (event.getKeyCode() == KeyEvent.VK_LEFT) {
+                    newY--;
                 }
 
                 //Если "стрелка вправо" - сдвинуть фигурку вправо
                 else if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
+                    newY++;
                 }
 
                 //Если "стрелка вверх" - сдвинуть фигурку вверх
                 else if (event.getKeyCode() == KeyEvent.VK_UP) {
+                    newX--;
                 }
 
                 //Если "стрелка вниз" - сдвинуть фигурку вниз
                 else if (event.getKeyCode() == KeyEvent.VK_DOWN) {
+                    newX++;
                 }
 
             }
 
-
+            move(newX, newY); // двигаем пакмена
             print();        //отображаем текущее состояние игры
             sleep();        //пауза между ходами
         }
@@ -85,11 +95,23 @@ public class Game {
         } catch (InterruptedException e) {
         }
     }
+ public void move(int newX, int newY){
+     if (newX>=0 && newY>=0 && newX<10 && newY<10) {
 
+         BaseElement elem = levelArray[newX][newY];
+         levelArray[newX][newY] = pac;
+         levelArray[pacPositionX][pacPositionY] = elem;
+         pacPositionX = newX;
+         pacPositionY = newY;
+
+     }
+
+
+ }
     public static void main(String[] args) throws IOException {
 
         Game game = new Game();
 
-        game.print();
+        game.run();
     }
 }
