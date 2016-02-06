@@ -6,7 +6,7 @@ public abstract class BaseElement {
     protected char charforShow;
 
     public void show() {
-        System.out.println(charforShow);
+        System.out.print(charforShow);
     }
 
 }
