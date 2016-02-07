@@ -12,11 +12,13 @@ public class Level {
     int sizeY;
     private PointXY pacPosition;
     private PointXY ghost1Position;
+    private PointXY ghost2Position;
+
 
     public Level(String filename) throws IOException {
 
-        sizeX = 10;
-        sizeY = 10;
+        sizeX = 30;
+        sizeY = 30;
         levelArray = new BaseElement[sizeX][sizeY];
         BufferedReader filereader = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
 
@@ -38,6 +40,10 @@ public class Level {
                 if (currentLineElement == 'W') {
                     levelArray[i][j] = new GhostElement();
                     ghost1Position = new PointXY(i, j);
+                }
+                if (currentLineElement == 'Y') {
+                    levelArray[i][j] = new GhostElement();
+                    ghost2Position = new PointXY(i, j);
                 }
 
 
@@ -72,6 +78,9 @@ public class Level {
 
     public PointXY getGhost1Position() {
         return ghost1Position;
+    }
+    public PointXY getGhost2Position() {
+        return ghost2Position;
     }
 
     public void print() {

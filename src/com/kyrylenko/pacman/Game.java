@@ -13,9 +13,11 @@ public class Game {
     private Level level;
     private PacmanElement pac = new PacmanElement();
     private GhostElement ghost1 = new GhostElement();
+    private GhostElement ghost2 = new GhostElement();
     private PointXY pacPosition;
     private PointXY ghost1Position;
-
+    private PointXY ghost2Position;
+    private boolean win = false;
 
     private int score = 0;
 
@@ -27,7 +29,7 @@ public class Game {
         }
         pacPosition = level.getPacPosition();
         ghost1Position = level.getGhost1Position();
-
+        ghost2Position = level.getGhost2Position();
     }
 
     public void run() {
@@ -36,7 +38,7 @@ public class Game {
         keyboardObserver.start();
 
 
-        while (true) {
+        while (pac.isAlive() && !win) {
             PointXY newPosition = pacPosition;
 
             //"наблюдатель" содержит события о нажатии клавиш?
@@ -64,17 +66,19 @@ public class Game {
                 else if (event.getKeyCode() == KeyEvent.VK_DOWN) {
                     newPosition = newPosition.moveDOWN();
                 }
-
             }
             if (score > 20) {
-                moveGhost(followPac(ghost1Position));
+                moveGhost1(followPac(ghost1Position));
+               // moveGhost2(followPac(ghost2Position));
             }
             movePac(newPosition); // двигаем пакмена
             level.print();        //отображаем текущее состояние игры
             sleep();        //пауза между ходами
         }
-
-
+        if (win) {
+            System.out.println("Congradulate!! Pac Win");
+        } else
+            System.out.println("Game over");
     }
 
     public void sleep() {
@@ -86,41 +90,49 @@ public class Game {
     }
 
     public void movePac(PointXY pointXY) {
-
         if (canBeMoved(pointXY)) {
-
-
-            TunnelElement tunel = (TunnelElement) level.getElement(pointXY);
-            if (!tunel.isEaten()) {
-                tunel.EatO();
-                score += 10;
-            }
-
-            if (tunel instanceof ExitElement) {
-
-                System.out.println("Win");
-                System.exit(0);
-
+            BaseElement element = level.getElement(pointXY);
+            if (element instanceof GhostElement) {
+                pac.die();
+            } else if (element instanceof TunnelElement) {
+                TunnelElement tunel = (TunnelElement) level.getElement(pointXY);
+                if (!tunel.isEaten()) {
+                    tunel.EatO();
+                    score += 10;
+                }
+                if (tunel instanceof ExitElement) {
+                    win = true;
+                }
             }
             level.setElement(pac, pointXY);
-            level.setElement(tunel, pacPosition);
+            level.setElement(element, pacPosition);
             pacPosition = pointXY;
-
         }
-
     }
 
-    public void moveGhost(PointXY pointXY) {
-
+    public void moveGhost1(PointXY pointXY) {
         if (canBeMoved(pointXY)) {
-
-            BaseElement tunel = level.getElement(pointXY);
+            BaseElement element = level.getElement(pointXY);
+            if (element instanceof PacmanElement) {
+                pac.die();
+            }
             level.setElement(ghost1, pointXY);
-            level.setElement(tunel, ghost1Position);
+            level.setElement(element, ghost1Position);
             ghost1Position = pointXY;
         }
     }
 
+    public void moveGhost2(PointXY pointXY) {
+        if (canBeMoved(pointXY)) {
+            BaseElement element = level.getElement(pointXY);
+            if (element instanceof PacmanElement) {
+                pac.die();
+            }
+            level.setElement(ghost2, pointXY);
+            level.setElement(element, ghost2Position);
+            ghost2Position = pointXY;
+        }
+    }
 
     public PointXY followPac(PointXY ghostPosition) {
         ArrayList<PointXY> possiblePositions = new ArrayList<PointXY>();
@@ -136,7 +148,6 @@ public class Game {
             }
         }
         return poinSortedByDistance.firstEntry().getValue();
-
     }
 
     public boolean canBeMoved(PointXY pointXY) {
@@ -144,9 +155,7 @@ public class Game {
         if (level.checkBounds(pointXY)) {
 
             BaseElement elem = level.getElement(pointXY);
-            if (elem instanceof TunnelElement) {
-                return true;
-            }
+            return !(elem instanceof WallElement);
         }
         return false;
     }
