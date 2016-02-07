@@ -1,60 +1,33 @@
 package com.kyrylenko.pacman;
 
 
-import com.kyrylenko.pacman.Elements.BaseElement;
-import com.kyrylenko.pacman.Elements.GhostElement;
-import com.kyrylenko.pacman.Elements.PacmanElement;
-import com.kyrylenko.pacman.Elements.TunnelElement;
+import com.kyrylenko.pacman.Elements.*;
 
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.TreeMap;
 
 public class Game {
 
-    private BaseElement[][] levelArray;
+    private Level level;
     private PacmanElement pac = new PacmanElement();
     private GhostElement ghost1 = new GhostElement();
-    //private GhostElement ghost2 = new GhostElement();
-    private int pacPositionX;
-    private int pacPositionY;
-    private int ghost1PositionX;
-    private int ghost1PositionY;
-   // private int ghost2PositionX;
-    //private int ghost2PositionY;
+    private PointXY pacPosition;
+    private PointXY ghost1Position;
+
+
     private int score = 0;
+
     public Game() {
-        Level level = null;
         try {
             level = new Level("E:/1.txt");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        levelArray = level.getLevelArray();
-        pacPositionX = 0;
-        pacPositionY = 1;
-        levelArray[pacPositionX][pacPositionY] = pac;
-        ghost1PositionX = 8;
-        ghost1PositionY = 8;
-        levelArray[ghost1PositionX][ghost1PositionY] = ghost1;
-       // ghost2PositionX = 5;
-      //  ghost2PositionY = 8;
-       // levelArray[ghost2PositionX][ghost2PositionY] = ghost2;
-    }
+        pacPosition = level.getPacPosition();
+        ghost1Position = level.getGhost1Position();
 
-    public void print() {
-        System.out.println("Score "+score);
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-
-                levelArray[i][j].show();
-                System.out.print(" ");
-
-            }
-            System.out.println();
-        }
-        System.out.println();
-        System.out.println();
-        System.out.println();
     }
 
     public void run() {
@@ -64,8 +37,7 @@ public class Game {
 
 
         while (true) {
-            int newX = pacPositionX;
-            int newY = pacPositionY;
+            PointXY newPosition = pacPosition;
 
             //"наблюдатель" содержит события о нажатии клавиш?
             if (keyboardObserver.hasKeyEvents()) {
@@ -75,29 +47,30 @@ public class Game {
 
                 //Если "стрелка влево" - сдвинуть фигурку влево
                 if (event.getKeyCode() == KeyEvent.VK_LEFT) {
-                    newY--;
+                    newPosition = newPosition.moveLEFT();
                 }
 
                 //Если "стрелка вправо" - сдвинуть фигурку вправо
                 else if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
-                    newY++;
+                    newPosition = newPosition.moveRIGHT();
                 }
 
                 //Если "стрелка вверх" - сдвинуть фигурку вверх
                 else if (event.getKeyCode() == KeyEvent.VK_UP) {
-                    newX--;
+                    newPosition = newPosition.moveUP();
                 }
 
                 //Если "стрелка вниз" - сдвинуть фигурку вниз
                 else if (event.getKeyCode() == KeyEvent.VK_DOWN) {
-                    newX++;
+                    newPosition = newPosition.moveDOWN();
                 }
 
             }
-            if (score>20){
-            followPac();}
-            movePac(newX, newY); // двигаем пакмена
-            print();        //отображаем текущее состояние игры
+            if (score > 20) {
+                moveGhost(followPac(ghost1Position));
+            }
+            movePac(newPosition); // двигаем пакмена
+            level.print();        //отображаем текущее состояние игры
             sleep();        //пауза между ходами
         }
 
@@ -111,90 +84,74 @@ public class Game {
         } catch (InterruptedException e) {
         }
     }
- public void movePac(int newX, int newY){
 
-     if (newX>=0 && newY>=0 && newX<10 && newY<10) {
+    public void movePac(PointXY pointXY) {
 
-         BaseElement elem = levelArray[newX][newY];
-          if (elem instanceof TunnelElement) {
-              TunnelElement tunel = (TunnelElement) elem;
-              if (!tunel.isEaten()){
-                  tunel.EatO();
-                  score +=10;
-              }
-             levelArray[newX][newY] = pac;
-             levelArray[pacPositionX][pacPositionY] = elem;
-             pacPositionX = newX;
-             pacPositionY = newY;
-         }
-     }
+        if (canBeMoved(pointXY)) {
 
 
- }
+            TunnelElement tunel = (TunnelElement) level.getElement(pointXY);
+            if (!tunel.isEaten()) {
+                tunel.EatO();
+                score += 10;
+            }
 
-    public void moveGhost(int newX,int newY){
+            if (tunel instanceof ExitElement) {
 
-        if (newX>=0 && newY>=0 && newX<10 && newY<10) {
+                System.out.println("Win");
+                System.exit(0);
 
-            BaseElement elem = levelArray[newX][newY];
-            if (elem instanceof TunnelElement) {
-                levelArray[newX][newY] = ghost1;
-                levelArray[ghost1PositionX][ghost1PositionY] = elem;
-                ghost1PositionX = newX;
-                ghost1PositionY = newY;
+            }
+            level.setElement(pac, pointXY);
+            level.setElement(tunel, pacPosition);
+            pacPosition = pointXY;
+
+        }
+
+    }
+
+    public void moveGhost(PointXY pointXY) {
+
+        if (canBeMoved(pointXY)) {
+
+            BaseElement tunel = level.getElement(pointXY);
+            level.setElement(ghost1, pointXY);
+            level.setElement(tunel, ghost1Position);
+            ghost1Position = pointXY;
+        }
+    }
+
+
+    public PointXY followPac(PointXY ghostPosition) {
+        ArrayList<PointXY> possiblePositions = new ArrayList<PointXY>();
+        possiblePositions.add(ghostPosition.moveUP());
+        possiblePositions.add(ghostPosition.moveDOWN());
+        possiblePositions.add(ghostPosition.moveLEFT());
+        possiblePositions.add(ghostPosition.moveRIGHT());
+
+        TreeMap<Double, PointXY> poinSortedByDistance = new TreeMap<Double, PointXY>();
+        for (PointXY pointXY : possiblePositions) {
+            if (canBeMoved(pointXY)) {
+                poinSortedByDistance.put(pointXY.getDistance(pacPosition), pointXY);
             }
         }
-
-
-
+        return poinSortedByDistance.firstEntry().getValue();
 
     }
 
-    public void followPac(){
-        PointXY moveUP = new PointXY(ghost1PositionX-1,ghost1PositionY);
-        PointXY moveDown = new PointXY(ghost1PositionX+1,ghost1PositionY);
-        PointXY moveLeft = new PointXY(ghost1PositionX,ghost1PositionY-1);
-        PointXY moveRight = new PointXY(ghost1PositionX,ghost1PositionY+1);
-        double currentDistance = calculateDistance(ghost1PositionX,ghost1PositionY);
+    public boolean canBeMoved(PointXY pointXY) {
 
-        if (canBeMoved(moveUP.getX(),moveUP.getY())&& calculateDistance(moveUP.getX(),moveUP.getY())<currentDistance )
-        {
-            moveGhost(moveUP.getX(),moveUP.getY());
-        }
+        if (level.checkBounds(pointXY)) {
 
-        else if (canBeMoved(moveDown.getX(),moveDown.getY())&& calculateDistance(moveDown.getX(),moveDown.getY())<currentDistance )
-        {
-            moveGhost(moveDown.getX(),moveDown.getY());
-        }
-        else if (canBeMoved(moveLeft.getX(),moveLeft.getY())&& calculateDistance(moveLeft.getX(),moveLeft.getY())<currentDistance )
-        {
-            moveGhost(moveLeft.getX(),moveLeft.getY());
-        }
-        else if (canBeMoved(moveRight.getX(),moveRight.getY())&& calculateDistance(moveRight.getX(),moveRight.getY())<currentDistance )
-        {
-            moveGhost(moveRight.getX(),moveRight.getY());
-        }
-    }
-
-    public boolean canBeMoved(int newX, int newY){
-
-        if (newX>=0 && newY>=0 && newX<10 && newY<10) {
-
-            BaseElement elem = levelArray[newX][newY];
+            BaseElement elem = level.getElement(pointXY);
             if (elem instanceof TunnelElement) {
-               return true;
+                return true;
             }
         }
         return false;
     }
 
 
-    public double calculateDistance(int newGhostX, int newGhostY){
-        double distanceX = pacPositionX - newGhostX;
-        double distanceY = pacPositionY - newGhostY;
-        return Math.sqrt(distanceX*distanceX+distanceY*distanceY);
-
-    }
     public static void main(String[] args) throws IOException {
 
         Game game = new Game();
