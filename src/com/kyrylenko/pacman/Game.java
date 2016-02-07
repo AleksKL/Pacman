@@ -6,6 +6,7 @@ import com.kyrylenko.pacman.Elements.*;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.TreeMap;
 
 public class Game {
@@ -21,9 +22,9 @@ public class Game {
 
     private int score = 0;
 
-    public Game() {
+    public Game(String levelPath) {
         try {
-            level = new Level("E:/1.txt");
+            level = new Level(levelPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -68,8 +69,11 @@ public class Game {
                 }
             }
             if (score > 20) {
-                moveGhost1(followPac(ghost1Position));
-               // moveGhost2(followPac(ghost2Position));
+                Random random = new Random();
+                if (random.nextDouble() > 0.7)
+                    moveGhost1(followPac(ghost1Position));
+                if (random.nextDouble() > 0.7)
+                    moveGhost2(followPac(ghost2Position));
             }
             movePac(newPosition); // двигаем пакмена
             level.print();        //отображаем текущее состояние игры
@@ -84,7 +88,7 @@ public class Game {
     public void sleep() {
         try {
 
-            Thread.sleep(100);
+            Thread.sleep(300);
         } catch (InterruptedException e) {
         }
     }
@@ -163,7 +167,7 @@ public class Game {
 
     public static void main(String[] args) throws IOException {
 
-        Game game = new Game();
+        Game game = new Game(args[0]);
 
         game.run();
     }

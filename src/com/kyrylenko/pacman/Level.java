@@ -16,11 +16,10 @@ public class Level {
 
 
     public Level(String filename) throws IOException {
-
-        sizeX = 30;
-        sizeY = 30;
-        levelArray = new BaseElement[sizeX][sizeY];
         BufferedReader filereader = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
+        sizeX = Integer.parseInt(filereader.readLine());
+        sizeY = Integer.parseInt(filereader.readLine());
+        levelArray = new BaseElement[sizeX][sizeY];
 
         for (int i = 0; i < sizeX; i++) {
             String currentFileLine = filereader.readLine();
@@ -54,10 +53,6 @@ public class Level {
     }
 
 
-    public BaseElement[][] getLevelArray() {
-        return levelArray;
-    }
-
     public BaseElement getElement(PointXY pointxy) {
 
         return levelArray[pointxy.getX()][pointxy.getY()];
@@ -79,12 +74,13 @@ public class Level {
     public PointXY getGhost1Position() {
         return ghost1Position;
     }
+
     public PointXY getGhost2Position() {
         return ghost2Position;
     }
 
     public void print() {
-        for (int i = 0; i <sizeX; i++) {
+        for (int i = 0; i < sizeX; i++) {
             for (int j = 0; j < sizeY; j++) {
 
                 levelArray[i][j].show();
